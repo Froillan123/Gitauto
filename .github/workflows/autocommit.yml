@@ -1,0 +1,104 @@
+name: GitAuto - Automated Commit Workflow
+
+on:
+  schedule:
+    # Run 3 times daily at:
+    # - 8 AM Manila Time (00:00 UTC)
+    # - 2 PM Manila Time (06:00 UTC)
+    # - 8 PM Manila Time (12:00 UTC)
+    - cron: "0 0 * * *"   # 8 AM PHT
+    - cron: "0 6 * * *"   # 2 PM PHT
+    - cron: "0 12 * * *"  # 8 PM PHT
+  workflow_dispatch:  # Allow manual triggering
+
+jobs:
+  automated-commit:
+    name: Automated Commit Generation
+    runs-on: ubuntu-latest
+    
+    permissions:
+      contents: write
+    
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+          token: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Configure Git Identity
+        run: |
+          git config --global user.name "${{ secrets.USERNAME }}"
+          git config --global user.email "${{ secrets.EMAIL }}"
+      
+      - name: Process Automated Commits
+        run: |
+          set -e
+          
+          # Configuration
+          FILES=("README.md")
+          COMMIT_LOOP_COUNT=1  # 1 commit per scheduled run (3 runs per day = 3 commits total)
+          BRANCH="master"
+          
+          # Switch to target branch
+          git checkout $BRANCH || git checkout -b $BRANCH
+          
+          echo "Starting automated commit process..."
+          echo "Target files: ${FILES[@]}"
+          echo "Commit count per execution: $COMMIT_LOOP_COUNT"
+          
+          for FILE in "${FILES[@]}"; do
+            if [ ! -f "$FILE" ]; then
+              echo "Warning: File $FILE not found. Skipping..."
+              continue
+            fi
+            
+            echo "Processing file: $FILE"
+            
+            # Generate commits
+            for ((i=1; i<=COMMIT_LOOP_COUNT; i++)); do
+              echo "--- Commit iteration $i of $COMMIT_LOOP_COUNT ---"
+              
+              # Extract current commit number
+              CURRENT_COUNT=$(grep -oP 'commit number: \K\d+' "$FILE" 2>/dev/null || echo "0")
+              NEXT_COUNT=$((CURRENT_COUNT + 1))
+              
+              echo "Current count: $CURRENT_COUNT → Next count: $NEXT_COUNT"
+              
+              # Update commit counter in file
+              if [[ "$OSTYPE" == "darwin"* ]]; then
+                # macOS
+                sed -i '' "/commit number: /c\\
+commit number: $NEXT_COUNT" "$FILE"
+              else
+                # Linux
+                sed -i "s/commit number: .*/commit number: $NEXT_COUNT/" "$FILE"
+              fi
+              
+              # Stage changes
+              git add "$FILE"
+              
+              # Create commit with descriptive message
+              COMMIT_MESSAGE="Auto commit #$NEXT_COUNT : target - ($FILE)"
+              git commit -m "$COMMIT_MESSAGE" || echo "No changes to commit"
+              
+              echo "✓ Commit $i completed"
+            done
+            
+            echo "All commits for $FILE processed"
+          done
+      
+      - name: Synchronize with Remote
+        run: |
+          # Pull latest changes before pushing
+          git pull origin master --rebase || echo "No remote changes to pull"
+          
+          # Push all commits
+          git push origin master
+          
+          echo "✓ All commits successfully pushed to remote repository"
+      
+      - name: Workflow Summary
+        run: |
+          echo "::notice::Automated commit workflow completed successfully"
+          echo "Commits generated and pushed to repository"
