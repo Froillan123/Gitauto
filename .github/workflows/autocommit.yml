@@ -68,8 +68,7 @@ jobs:
               # Update commit counter in file
               if [[ "$OSTYPE" == "darwin"* ]]; then
                 # macOS
-                sed -i '' "/commit number: /c\\
-commit number: $NEXT_COUNT" "$FILE"
+                sed -i '' "s/commit number: .*/commit number: $NEXT_COUNT/" "$FILE"
               else
                 # Linux
                 sed -i "s/commit number: .*/commit number: $NEXT_COUNT/" "$FILE"
