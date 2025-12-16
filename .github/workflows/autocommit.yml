@@ -2,13 +2,8 @@ name: GitAuto - Automated Commit Workflow
 
 on:
   schedule:
-    # Run 3 times daily at:
-    # - 8 AM Manila Time (00:00 UTC)
-    # - 2 PM Manila Time (06:00 UTC)
-    # - 8 PM Manila Time (12:00 UTC)
+    # Run once daily at 8 AM Manila Time (00:00 UTC)
     - cron: "0 0 * * *"   # 8 AM PHT
-    - cron: "0 6 * * *"   # 2 PM PHT
-    - cron: "0 12 * * *"  # 8 PM PHT
   workflow_dispatch:  # Allow manual triggering
 
 jobs:
@@ -37,7 +32,7 @@ jobs:
           
           # Configuration
           FILES=("README.md")
-          COMMIT_LOOP_COUNT=1  # 1 commit per scheduled run (3 runs per day = 3 commits total)
+          COMMIT_LOOP_COUNT=1  # 1 commit per day
           BRANCH="master"
           
           # Switch to target branch

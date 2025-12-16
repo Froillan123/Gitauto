@@ -12,17 +12,17 @@ commit number: 134
 
 ## 🎯 Features
 
-- **Automated Scheduling**: 3 scheduled executions per day (8 AM, 2 PM, 8 PM Manila Time)
+- **Automated Scheduling**: 1 scheduled execution per day (8 AM Manila Time)
 - **Intelligent Commit Tracking**: Automatic increment of commit counters
 - **GitHub Actions Integration**: Seamless CI/CD workflow automation
-- **Distributed Commits**: 1 commit per run, spread throughout the day (total 3 commits/day)
+- **Daily Commit**: 1 commit per day
 - **Professional Commit Messages**: Structured and descriptive commit messages
 
 ## 🔄 Workflow Architecture
 
 ```mermaid
 graph TD
-    A[GitHub Actions Trigger] -->|Scheduled 3x Daily| B[Checkout Repository]
+    A[GitHub Actions Trigger] -->|Scheduled Daily| B[Checkout Repository]
     B --> C[Configure Git User]
     C --> D[Read Current Commit Count]
     D --> E{File Exists?}
@@ -59,7 +59,7 @@ sequenceDiagram
     GH->>Repo: Pull Latest Changes
     GH->>Repo: Push Commit
     
-    Note over GH,Repo: Runs 3x daily: 8 AM, 2 PM, 8 PM (Manila Time)
+    Note over GH,Repo: Runs daily at 8 AM (Manila Time)
 ```
 
 ## 🚀 Quick Start
